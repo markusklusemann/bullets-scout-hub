@@ -716,8 +716,9 @@
     <span class="count" id="gsCount"></span>
     <div class="section-rule"></div>
   </div>
-  <p class="matchup-note">Recall check before the roster unlocks — answer all 5 from memory, then review the
-  roster above to confirm.</p>
+  <p class="matchup-note">Recall check — review the roster and matchups above, then answer these 5 from memory.
+  Finish them (along with every player card and Team Recall question) to unlock the Stats Summary and the Mini
+  Cheat Sheet.</p>
   <div id="gameSituationsBody"></div>
 
   <details class="panel" hidden>
@@ -1152,19 +1153,28 @@ function refreshRosterGate(){
   const note = document.getElementById('rosterLockNote');
   const content = document.getElementById('rosterGateContent');
   if(!note || !content) return;
-  const done = gsScored.size === GAME_SITUATIONS.length || coachMode;
-  content.hidden = !done;
-  if(done){
-    note.hidden = true;
-    note.innerHTML = '';
-  } else {
-    note.hidden = false;
+  // "No-peek" standard (2 Oct 2026, see methodology §7c): information shows
+  // first and is never gated before a recall quiz starts - Starters/Rotation/
+  // Bench/Matchups are visible the moment the Players tab loads. The instant
+  // the viewer answers the FIRST Game Situations question below, though, this
+  // section hides so they can't scroll back up and read the answer while
+  // finishing the rest from memory - it reappears once every Game Situations
+  // question is answered (or immediately in coach mode, which is never
+  // subject to this lock). Game Situations also still has to be fully
+  // answered before the Stats Summary table and the Summary tab's Mini Cheat
+  // Sheet unlock - see renderStatsSummary()/renderSummary() for that gate.
+  const inProgress = gsScored.size > 0 && gsScored.size < GAME_SITUATIONS.length && !coachMode;
+  content.hidden = inProgress;
+  note.hidden = !inProgress;
+  if(inProgress){
     const remaining = GAME_SITUATIONS.length - gsScored.size;
     note.innerHTML = `<span class="lock-icon">&#128274;</span>
-      <div class="lock-title">Roster locked — recall it first</div>
-      <div class="lock-sub">${remaining} game situation question${remaining===1?'':'s'} left below — answer them all to unlock Starters, Rotation, Bench &amp; Matchups.</div>
+      <div class="lock-title">Finish the recall to see the roster again</div>
+      <div class="lock-sub">${remaining} game situation question${remaining===1?'':'s'} left below — answer from memory, no peeking.</div>
       ${coachUnlockHTML('roster')}`;
     wireCoachUnlock('roster');
+  } else {
+    note.innerHTML = '';
   }
 }
 
@@ -1191,7 +1201,7 @@ function wireGameSituations(){
       fb.textContent = isCorrect ? 'Correct — locked in.' : 'Not quite — correct answer highlighted.';
       if(!gsScored.has(qi)){
         gsScored.add(qi);
-        refreshRosterGate();
+        updateHUD();
       }
     }
 
@@ -1315,6 +1325,8 @@ function renderTeamOverview(){
   if(!el) return;
   const kv = TEAM_OVERVIEW.keysToVictory;
   el.innerHTML = `
+    <div class="locked-state" id="teamInfoLockNote" hidden></div>
+    <div id="teamInfoSection">
     <div class="section-head"><h2>Keys to Victory</h2><div class="section-rule"></div></div>
     ${kv.length
       ? `<ul class="kv-list">${kv.map(k=>`<li>${k}</li>`).join('')}</ul>`
@@ -1323,11 +1335,37 @@ function renderTeamOverview(){
     <div class="section-head" style="margin-top:0;"><h2>Actions &amp; Sets</h2><div class="section-rule"></div></div>
     ${callSheetTable('Starting Defense', TEAM_OVERVIEW.startingDefense)}
     ${startingOffenseTable('Starting Offense', TEAM_OVERVIEW.startingOffense)}
+    </div>
 
     <div class="section-head" style="margin-top:34px;"><h2>Team Recall</h2><span class="count" id="teamRecallCount"></span><div class="section-rule"></div></div>
     ${TEAM_QUIZ.length ? teamQuizHTML() : `<p class="pending-note" style="margin:2px 2px;">Pending — Team Recall will populate once Keys to Victory are supplied.</p>`}
   `;
   wireTeamQuiz();
+  refreshTeamInfoGate();
+}
+
+function refreshTeamInfoGate(){
+  // "No-peek" standard (2 Oct 2026, see methodology §7c) - mirrors
+  // refreshRosterGate() on the Players tab. Keys to Victory / Starting
+  // Defense / Starting Offense show by default; the moment the viewer
+  // answers the FIRST Team Recall question, this section hides until every
+  // Team Recall question is answered (or immediately in coach mode).
+  const note = document.getElementById('teamInfoLockNote');
+  const content = document.getElementById('teamInfoSection');
+  if(!note || !content) return;
+  const inProgress = TEAM_QUIZ.length > 0 && teamScored.size > 0 && teamScored.size < TEAM_QUIZ.length && !coachMode;
+  content.hidden = inProgress;
+  note.hidden = !inProgress;
+  if(inProgress){
+    const remaining = TEAM_QUIZ.length - teamScored.size;
+    note.innerHTML = `<span class="lock-icon">&#128274;</span>
+      <div class="lock-title">Finish Team Recall to see this again</div>
+      <div class="lock-sub">${remaining} Team Recall question${remaining===1?'':'s'} left below — answer from memory, no peeking.</div>
+      ${coachUnlockHTML('teamInfo')}`;
+    wireCoachUnlock('teamInfo');
+  } else {
+    note.innerHTML = '';
+  }
 }
 
 // ---------- Stats Summary ----------
@@ -1380,13 +1418,14 @@ function topBottomMiniTables(){
 function renderStatsSummary(){
   const el = document.getElementById('statsSummaryBody');
   if(!el) return;
-  const earned = scored.size === TOTAL_QUIZZES;
+  const earned = scored.size === TOTAL_QUIZZES && gsScored.size === GAME_SITUATIONS.length;
   const done = earned || coachMode;
   if(!done){
+    const remaining = (TOTAL_QUIZZES - scored.size) + (GAME_SITUATIONS.length - gsScored.size);
     el.innerHTML = `<div class="locked-state">
       <span class="lock-icon">&#128274;</span>
       <div class="lock-title">Locked until every player is recalled</div>
-      <div class="lock-sub">${scored.size}/${TOTAL_QUIZZES} recall questions answered on the Players tab — finish those to unlock this table.</div>
+      <div class="lock-sub">${remaining} recall question${remaining===1?'':'s'} left (player cards + Game Situations on the Players tab) — finish those to unlock this table.</div>
       ${coachUnlockHTML('stats')}
     </div>`;
     wireCoachUnlock('stats');
@@ -1438,7 +1477,7 @@ function renderSummary(){
   if(!el) return;
   const totalScore = correct + (TEAM_OVERVIEW_ENABLED ? teamCorrect : 0);
   const totalQuestions = TOTAL_QUIZZES + (TEAM_OVERVIEW_ENABLED ? TEAM_QUIZ.length : 0);
-  const earnedAllDone = scored.size===TOTAL_QUIZZES && (!TEAM_OVERVIEW_ENABLED || teamScored.size===TEAM_QUIZ.length);
+  const earnedAllDone = scored.size===TOTAL_QUIZZES && (!TEAM_OVERVIEW_ENABLED || teamScored.size===TEAM_QUIZ.length) && gsScored.size===GAME_SITUATIONS.length;
   const allDone = earnedAllDone || coachMode;
 
   let cheatHTML;
@@ -1462,8 +1501,8 @@ function renderSummary(){
       </div>
     </div>`;
   } else {
-    const remaining = (TOTAL_QUIZZES - scored.size) + (TEAM_OVERVIEW_ENABLED ? (TEAM_QUIZ.length - teamScored.size) : 0);
-    const remainingScope = TEAM_OVERVIEW_ENABLED ? 'across Players and Team Overview' : 'on the Players tab';
+    const remaining = (TOTAL_QUIZZES - scored.size) + (TEAM_OVERVIEW_ENABLED ? (TEAM_QUIZ.length - teamScored.size) : 0) + (GAME_SITUATIONS.length - gsScored.size);
+    const remainingScope = TEAM_OVERVIEW_ENABLED ? 'across Players, Team Overview and Game Situations' : 'on the Players tab, including Game Situations';
     cheatHTML = `<div class="locked-state">
       <span class="lock-icon">&#128274;</span>
       <div class="lock-title">Cheat sheet unlocks once everything's reviewed</div>
@@ -1737,6 +1776,7 @@ function updateHUD(){
   renderStatsSummary();
   renderSummary();
   refreshRosterGate();
+  refreshTeamInfoGate();
   updateGuide();
 }
 
@@ -1878,8 +1918,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b===btn));
     const tab = btn.dataset.tab;
     document.querySelectorAll('.tab-page').forEach(p=>p.classList.toggle('active', p.dataset.tabPage===tab));
-    if(tab==='stats' && scored.size===TOTAL_QUIZZES) visitedStatsUnlocked = true;
-    if(tab==='summary' && scored.size===TOTAL_QUIZZES && (!TEAM_OVERVIEW_ENABLED || teamScored.size===TEAM_QUIZ.length)) visitedSummaryDone = true;
+    if(tab==='stats' && scored.size===TOTAL_QUIZZES && gsScored.size===GAME_SITUATIONS.length) visitedStatsUnlocked = true;
+    if(tab==='summary' && scored.size===TOTAL_QUIZZES && (!TEAM_OVERVIEW_ENABLED || teamScored.size===TEAM_QUIZ.length) && gsScored.size===GAME_SITUATIONS.length) visitedSummaryDone = true;
     if(tab==='players') fitAllGrids();
     updateGuide();
   });
