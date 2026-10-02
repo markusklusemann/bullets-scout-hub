@@ -870,7 +870,7 @@ const PLAYERS = [
    styleTag:'Lefty Mobile Post', styleTagSource:'sheet', shootCat:'DRIVER',
    ht:'6\'10" (208cm)', wt:'222lb (101kg)',
    avg2:{cs3:'30.8%', db3:'44.4%', pa3:'17.1%', ft:'72.9%', ftr:'31.8%', orb:'2.5', ast:'1.9'},
-   stats:[['MIN','29.8'],['PPG','14.6'],['REB','8.8'],['AST','2.0']], keys:['SHORT','LOW DROP/MUCK','Likes pockets/FT-line isos','Influence Right — wants to drive & finish left.'],
+   stats:[['MIN','29.8'],['PPG','14.6'],['REB','8.8'],['AST','2.0']], keys:['SHORT','HIGH DROP','Likes pockets/FT-line isos','Influence Right — wants to drive & finish left.'],
    quiz:[
      {q:'Which direction do you send Bannan on drives?', opts:['Right','Left','Baseline'], correct:0}
    ], flagged:false},
@@ -946,9 +946,9 @@ const PLAYERS = [
    ht:'TBC', wt:'TBC',
    avg2:{cs3:'20.0%', db3:'28.7%', pa3:'N/A', ft:'N/A', ftr:'N/A', orb:'N/A', ast:'N/A'},
    stats:[['MIN','—'],['PPG','—'],['REB','—'],['AST','—']],
-   keys:['MIX IT UP','Contain in transition.','Will settle for mid-range jumpers.','Target post-ups — undersized (mouse).'],
+   keys:['MIX IT UP','Contain in transition.','Will settle for mid-range jumpers.'],
    quiz:[
-     {q:"What's the exploit on Bayles in the post, per scouting notes?", opts:['Target him in post-ups — undersized (mouse)','Avoid posting him up, he holds his ground','He never settles for jumpers'], correct:0}
+     {q:"What's a tendency to exploit with Bayles, per scouting notes?", opts:['He attacks the rim relentlessly and rarely settles','He will settle for mid-range jumpers','He never shoots off the dribble'], correct:1}
    ], flagged:false},
 ];
 
@@ -1060,18 +1060,17 @@ function wireCoachUnlock(idSuffix){
 const TEAM_OVERVIEW = {
   keysToVictory: [
     'PURSUE & AVOID',
-    '1v5 their main guys (Johnson, Armstrong, Magnay, Mathias)',
-    'Find targets & open windows!',
+    'SOLUTION = ADVANTAGE BASKETBALL',
   ],
   startingDefense: [
-    {situation:'On-Ball Screens', personnel:'1-4', call:'Red', status:''},
-    {situation:'On-Ball Screens', personnel:'5', call:'Low Drop', status:''},
-    {situation:'Ready For', personnel:'1-5', call:'Red -> Scram mismatches in post before catch or Pounce on dribble', status:''},
-    {situation:'Off-ball', personnel:['1-4','5'], call:['THROUGH','MUCK & TOP'], status:''},
-    {situation:'Gets', personnel:['5','1-4'], call:['LOW DROP (MAGNAY, BANNAN)','THROUGH (KYP), Ready for PEEL (GOLD)'], status:''},
+    {situation:'Onball Screens/Gets', personnel:'1-3', call:'RED', status:''},
+    {situation:'Onball Screens/Gets', personnel:'4', call:['HIGH DROP (Bannan)','RED (Gold)'], status:''},
+    {situation:'Onball Screens/Gets', personnel:'5', call:'LOW DROP (Magnay)', status:''},
+    {situation:'Off-Ball Screens', personnel:'', call:'TOP when possible, if not CHASE Shooters (KYP)', status:''},
+    {situation:'Ready For', personnel:'1-5', call:['LINE & 3','POST MISMATCH -> Scram or Send middle and POUNCE'], status:''},
     {situation:'Full Court', personnel:'-', call:[
-      'Off - Armstrong (after makes)',
-      '12 (after deadballs)',
+      'Deadballs = 12',
+      'FT with 5 = OFF Armstrong',
     ], status:''},
     {situation:'Their Main Sets', personnel:'-', call:[
       '"HIP" - Drag - Wide',
@@ -1083,24 +1082,22 @@ const TEAM_OVERVIEW = {
     ], status:''},
   ],
   startingOffense: [
-    {situation:'Transition', details:'Attack & Involve Targets', status:''},
-    {situation:'Trigger Roll Types', details:[
-      'v Drop - Hostage & Claps/Pops',
-      'v Gray - 2 Pass & Stampede',
-      'v Red - Crack & Pocket',
+    {situation:'Transition (TO/After miss)', details:'sprint to corners, find targets', status:''},
+    {situation:'HC Sets (after makes)', details:[
+      'High 5',
+      'Hip getting middle (snake if needed)',
+      'Point: step, exit, double',
+      'Horns (2): backside',
     ], status:''},
-    {situation:'HC Sets (When Slow)', details:[
-      'Attack 2nd Side',
-      'Find Open Windows v Magnay',
-      'Transition',
-      'Horns 2 Pop',
-      'Away 4 Curl',
+    {situation:'Roll Types', details:[
+      'v DROP = Middle & Clide',
+      'v RED = Pocket & Clide',
+      'v GRAY = Pocket & Clide',
     ], status:''},
     {situation:'Targets', details:[
       'Mathias (Turtle)',
       'Stoddart (Turtle)',
       'Armstrong (Screens)',
-      'Bayles (mouse)',
     ], status:''},
   ],
 };
@@ -1111,11 +1108,11 @@ const TEAM_OVERVIEW = {
 // One question per Key to Victory (29 Sep 2026), each correct answer's
 // position randomized per the standing anti-position-0-bias rule (§7b).
 const TEAM_QUIZ = [
-  {q:'What\'s our team keyword for this game plan?', opts:['ExecuteHard','KnowThePlan','TrustTheProcess'], correct:1},
-  {q:'Which four Tasmania players are our "1v5" primary defensive focus?', opts:['Johnson, Armstrong, Magnay, Mathias','Bannan, Gold, Drmic, Stoddart','Marshall, Deng, Hamilton, Haywood'], correct:0},
-  {q:'What\'s our approach to attacking Tasmania\'s defense?', opts:['Iso everything and slow it down','Grind the shot clock every possession','Find targets & open windows'], correct:2},
-  {q:'Starting Defense — how do we guard On-Ball Screens when their 5 sets the screen?', opts:['Red','Low Drop','Switch everything'], correct:1},
-  {q:'Starting Offense — against a Drop coverage ball screen, what\'s our read?', opts:['Hostage & Claps/Pops','2 Pass & Stampede','Crack & Pocket'], correct:0},
+  {q:'What\'s our first key to victory for this game plan?', opts:['TRUSTTHEPROCESS','PURSUE & AVOID','RUN INTO SCREENS'], correct:1},
+  {q:'Which three Tasmania players are our primary offensive Targets?', opts:['Johnson, Armstrong, Magnay','Marshall, Gold, Bannan','Mathias, Stoddart, Armstrong'], correct:2},
+  {q:'After a turnover or a miss, what\'s our transition read?', opts:['Sprint to corners, find targets','Pull it out and set up half-court','Call timeout immediately'], correct:0},
+  {q:'Starting Defense — Onball Screens/Gets: how do we guard it when their 5 sets the screen?', opts:['Switch everything','Low Drop','Red'], correct:1},
+  {q:'Starting Offense — Roll Types: against a Drop coverage ball screen, what\'s our read?', opts:['Middy Pull-up Jumper','Middle & Clide','Pocket & Clide'], correct:1},
 ];
 
 // Game Situations: bottom-of-Players-tab recall check (29 Sep 2026), gating
@@ -1667,9 +1664,9 @@ const MATCHUPS = [
   {tas:'BANNAN', bullets:['WILLIAMS','ROUHLIADEFF']},
   {tas:'MAGNAY', bullets:['HARRISON','HOLT']},
   {tas:'GOLD', bullets:['ROUHLIADEFF','WILLIAMS']},
-  {tas:'MARSHALL', bullets:['HINTON','MAYEN']},
+  {tas:'MARSHALL', bullets:['HINTON','MACKINNON','MAYEN']},
   {tas:'STATTMANN', bullets:['MACKINNON','MAYEN']},
-  {tas:'BAYLES', bullets:['NORTON','ARNAS']},
+  {tas:'BAYLES', bullets:['NORTON','VELICKA']},
 ];
 
 // Bullets headshots aren't in the Hub yet - same manual hand-off every Tasmania photo
